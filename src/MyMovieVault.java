@@ -3,6 +3,12 @@
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class MyMovieVault {
 
@@ -10,14 +16,43 @@ public class MyMovieVault {
     static class Movie{
 
         //建立了一個屬性，名稱是 title，資料型別是 String
+        int movieId;
         String movieTitle;
         String movieGenre;
 
         //建立了一個方法，這是"建構子"，名稱是 Movie
-        Movie(String titleInput, String genreInput){
+        Movie(int idInput, String titleInput, String genreInput){
+            movieId=idInput;
             movieTitle=titleInput; //參數進來，會放進參數變數 titleInput再配指派到 movieTitle 欄位中
             movieGenre=genreInput;
         }
+
+        public int getMovieId(){
+            return movieId;
+        }
+
+        public void setMovieId(int movieId){
+
+        }
+
+        public String getMovieTitle(){
+            return movieTitle;
+        }
+
+        public void setMovieTitle(String title){
+            movieTitle=title;
+        }
+
+        public String getMovieGenre(){
+            return movieGenre;
+        }
+
+        public void setMovieGenre(String genre){
+            movieGenre=genre;
+        }
+
+
+
 
         //註解(annotation)，重寫父類別的方法 toString()
         @Override
@@ -28,7 +63,6 @@ public class MyMovieVault {
     }
 
     public static void main(String[] args){
-        ArrayList<Movie> movieList=new ArrayList();
         Scanner scanner=new Scanner(System.in);
         boolean running=true;
 
@@ -50,20 +84,63 @@ public class MyMovieVault {
                     String titleInput=scanner.nextLine();
                     System.out.print("請輸入電影類型：");
                     String genreInput=scanner.nextLine();
-                    movieList.add(new Movie(titleInput, genreInput));
-                    System.out.println("已新增電影！");
+
+                    try{
+                        Connection conn=DriverManager.getConnection("jdbc:sqlite:D:/下載/javatest-2/my-movie-vault-2/mmv.db");
+
+                        String sql="INSERT INTO movie(title, genre) VALUES(?,?)";
+                        PreparedStatement pstmt=conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                        pstmt.setString(1, titleInput);
+                        pstmt.setString(2, genreInput);
+
+                        int affectedRows=pstmt.executeUpdate();
+
+                        if(affectedRows>0){
+                            ResultSet generatedKeys=pstmt.getGeneratedKeys();
+                            if(generatedKeys.next()){
+                                int newId=generatedKeys.getInt(1);
+                                System.out.println("已新增電影，ID:"+newId);
+                            }
+                        }
+
+                        pstmt.close();
+                        conn.close();
+                    }
+                    catch(SQLException e){
+                        System.out.println("新增電影失敗:"+e.getMessage());
+                    }
                     break;
 
                 case 2:
                     System.out.println("\n電影清單：");
-                    if (movieList.isEmpty()){
-                        System.out.println("(目前沒有任何電影)");
-                    }
-                    else {
-                        for (Movie movie:movieList){
-                            System.out.print(movie);
+
+                    try{
+                        Connection conn=DriverManager.getConnection("jdbc:sqlite:D:/下載/javatest-2/my-movie-vault-2/mmv.db");
+                        String sql="SELECT*FROM movie";
+                        Statement stmt=conn.createStatement();
+                        ResultSet rs=stmt.executeQuery(sql);
+
+                        boolean hasResult=false;
+                        while(rs.next()){
+                            int id=rs.getInt("id");
+                            String title=rs.getString("title");
+                            String genre=rs.getString("genre");
+                            System.out.println("ID:"+id+"｜片名"+title+"｜類型："+genre);
+                            hasResult=true;
                         }
+
+                        if(!hasResult){
+                            System.out.println("（目前沒有任何電影）");
+                        }
+
+                        rs.close();
+                        stmt.close();
+                        conn.close();
                     }
+                    catch(SQLException e){
+                        System.out.println("查詢失敗："+e.getMessage());
+                    }
+
                     break;
 
                 case 3:
