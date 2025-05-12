@@ -86,7 +86,7 @@ public class MyMovieVault {
                     String genreInput=scanner.nextLine();
 
                     try{
-                        Connection conn=DriverManager.getConnection("jdbc:sqlite:D:/下載/javatest-2/my-movie-vault-2/mmv.db");
+                        Connection conn = DriverManager.getConnection("jdbc:sqlite:mmv.db");
 
                         String sql="INSERT INTO movie(title, genre) VALUES(?,?)";
                         PreparedStatement pstmt=conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -115,8 +115,7 @@ public class MyMovieVault {
                     System.out.println("\n電影清單：");
 
                     try{
-                        Connection conn=DriverManager.getConnection("jdbc:sqlite:D:/下載/javatest-2/my-movie-vault-2/mmv.db");
-                        String sql="SELECT*FROM movie";
+                        Connection conn = DriverManager.getConnection("jdbc:sqlite:mmv.db");                        String sql="SELECT*FROM movie";
                         Statement stmt=conn.createStatement();
                         ResultSet rs=stmt.executeQuery(sql);
 
