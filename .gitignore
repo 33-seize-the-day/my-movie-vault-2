@@ -27,3 +27,19 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# IntelliJ
+.idea/
+*.iml
+
+# Maven
+/target/
+
+# Spring Boot
+/application.properties.local
+
+# SQLite
+*.db
+
+# Legacy backup
+/legacy-backup/
